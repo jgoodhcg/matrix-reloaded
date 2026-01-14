@@ -1,10 +1,11 @@
 import { watch } from "fs";
 import { readdir } from "fs/promises";
-import { join, resolve } from "path";
+import { resolve, join } from "path";
 import type { ServerWebSocket } from "bun";
 import type { DecisionMatrix } from "./types";
 import { printInstructions } from "./instructions";
 import { generateXLSX, getXLSXPath } from "./export";
+import { viewerHTML } from "./viewer";
 
 const DEFAULT_PORT = 3000;
 const DECISIONS_DIR = ".decisions";
@@ -85,14 +86,6 @@ async function loadMatrix(filePath: string): Promise<DecisionMatrix> {
   return JSON.parse(content) as DecisionMatrix;
 }
 
-// Read viewer HTML
-async function getViewerHTML(): Promise<string> {
-  // In development, read from src/viewer.html
-  // When compiled, this will be bundled
-  const viewerPath = join(import.meta.dir, "viewer.html");
-  const file = Bun.file(viewerPath);
-  return file.text();
-}
 
 // Main
 async function main() {
@@ -135,9 +128,6 @@ async function main() {
 
   // Track WebSocket clients
   const clients = new Set<ServerWebSocket<unknown>>();
-
-  // Get viewer HTML once
-  const viewerHTML = await getViewerHTML();
 
   // Initial XLSX export
   try {

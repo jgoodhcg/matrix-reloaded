@@ -1,0 +1,134 @@
+export const viewerHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision Matrix</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; color: #333; }
+    .table-container { height: 100vh; width: 100vw; overflow: auto; }
+    .status { position: fixed; top: 1rem; right: 1rem; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.875rem; font-weight: 500; z-index: 100; }
+    .status.connected { background: #d4edda; color: #155724; }
+    .status.disconnected { background: #f8d7da; color: #721c24; }
+    table { border-collapse: separate; border-spacing: 0; background: white; }
+    th, td { padding: 0; text-align: left; border: 1px solid #e0e0e0; vertical-align: top; min-width: 200px; max-width: 300px; }
+    .cell-content { padding: 1rem; max-height: 120px; overflow: auto; }
+    th:first-child, td:first-child { position: sticky; left: 0; z-index: 2; }
+    thead tr:first-child th { position: sticky; top: 0; z-index: 3; }
+    thead tr:first-child th:first-child { z-index: 4; }
+    .decision-statement { background: #2c3e50; color: white; font-size: 1.25rem; font-weight: 600; min-width: 200px; }
+    .option-label { background: #34495e; color: white; font-weight: 600; text-align: center; }
+    .decision-description { background: #ecf0f1; font-style: italic; color: #555; }
+    .option-description { background: #f8f9fa; font-size: 0.9rem; color: #555; }
+    .criteria-name { background: #f8f9fa; font-weight: 600; min-width: 150px; }
+    .cell { cursor: pointer; transition: filter 0.1s; }
+    .cell.red { background: #ffcccc; }
+    .cell.yellow { background: #ffffcc; }
+    .cell.green { background: #ccffcc; }
+    td.cell:hover { filter: brightness(0.92); }
+    .empty { color: #999; font-style: italic; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-width: 600px; max-height: 80vh; overflow: auto; padding: 1.5rem; }
+    .modal-header { font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; color: #2c3e50; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.5rem; }
+    .modal-subheader { font-size: 0.9rem; color: #666; margin-bottom: 1rem; }
+    .modal-content { line-height: 1.6; }
+    .modal-color-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 0.5rem; vertical-align: middle; }
+    .modal-color-indicator.red { background: #ff9999; }
+    .modal-color-indicator.yellow { background: #ffff99; }
+    .modal-color-indicator.green { background: #99ff99; }
+  </style>
+</head>
+<body>
+  <div class="status disconnected" id="status">Disconnected</div>
+  <div class="table-container"><table id="matrix"></table></div>
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal">
+      <div class="modal-header" id="modal-header"></div>
+      <div class="modal-subheader" id="modal-subheader"></div>
+      <div class="modal-content" id="modal-content"></div>
+    </div>
+  </div>
+  <script>
+    let ws, currentMatrix = null;
+    const statusEl = document.getElementById("status");
+    const matrixEl = document.getElementById("matrix");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const modalHeader = document.getElementById("modal-header");
+    const modalSubheader = document.getElementById("modal-subheader");
+    const modalContent = document.getElementById("modal-content");
+
+    function connectWebSocket() {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      ws = new WebSocket(protocol + "//" + window.location.host + "/ws");
+      ws.onopen = () => { statusEl.textContent = "Connected"; statusEl.className = "status connected"; };
+      ws.onclose = () => { statusEl.textContent = "Disconnected"; statusEl.className = "status disconnected"; setTimeout(connectWebSocket, 2000); };
+      ws.onmessage = (event) => { const msg = JSON.parse(event.data); if (msg.type === "reload") fetchAndRender(); };
+    }
+
+    async function fetchAndRender() {
+      try {
+        const res = await fetch("/api/matrix");
+        const matrix = await res.json();
+        currentMatrix = matrix;
+        render(matrix);
+        document.title = matrix.decision.statement + " | Decision Matrix";
+      } catch (err) { console.error("Failed to fetch matrix:", err); }
+    }
+
+    function render(matrix) {
+      const { decision, options, criteria } = matrix;
+      let html = "<thead><tr>";
+      html += '<th class="decision-statement"><div class="cell-content">' + escapeHtml(decision.statement) + '</div></th>';
+      for (const opt of options) html += '<th class="option-label"><div class="cell-content">' + escapeHtml(opt.label) + '</div></th>';
+      html += '</tr><tr><th class="decision-description"><div class="cell-content">' + escapeHtml(decision.description) + '</div></th>';
+      for (const opt of options) html += '<th class="option-description"><div class="cell-content">' + escapeHtml(opt.description) + '</div></th>';
+      html += "</tr></thead><tbody>";
+      for (const crit of criteria) {
+        html += '<tr><td class="criteria-name"><div class="cell-content">' + escapeHtml(crit.name) + '</div></td>';
+        for (const opt of options) {
+          const cell = crit.cells[opt.label];
+          if (cell) {
+            const colorClass = cell.color || "";
+            html += '<td class="cell ' + colorClass + '" data-option="' + escapeHtml(opt.label) + '" data-criteria="' + escapeHtml(crit.name) + '"><div class="cell-content">' + escapeHtml(cell.text) + '</div></td>';
+          } else {
+            html += '<td class="cell empty"><div class="cell-content">-</div></td>';
+          }
+        }
+        html += "</tr>";
+      }
+      html += "</tbody>";
+      matrixEl.innerHTML = html;
+      document.querySelectorAll("td.cell:not(.empty)").forEach(cell => {
+        cell.addEventListener("click", () => showModal(cell.dataset.option, cell.dataset.criteria));
+      });
+    }
+
+    function showModal(optionLabel, criteriaName) {
+      if (!currentMatrix) return;
+      const criteria = currentMatrix.criteria.find(c => c.name === criteriaName);
+      if (!criteria) return;
+      const cell = criteria.cells[optionLabel];
+      if (!cell) return;
+      modalHeader.innerHTML = '<span class="modal-color-indicator ' + (cell.color || '') + '"></span>' + escapeHtml(optionLabel);
+      modalSubheader.textContent = criteriaName;
+      modalContent.textContent = cell.text;
+      modalOverlay.classList.add("active");
+    }
+
+    function hideModal() { modalOverlay.classList.remove("active"); }
+    modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) hideModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideModal(); });
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    connectWebSocket();
+    fetchAndRender();
+  </script>
+</body>
+</html>`;

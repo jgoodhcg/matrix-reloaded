@@ -101,6 +101,32 @@ matrix-reloaded/
 - Database storage
 - Custom themes
 
+## Backlog
+
+### In-browser editing
+Allow users to edit the matrix directly in the viewer and write changes back to the JSON file. Assumes workflow discipline (don't edit while agent is writing).
+
+Features:
+- Edit cell colors (click to cycle or color picker)
+- Edit cell text inline
+- Edit option labels and descriptions
+- Edit criteria names
+- Add/remove columns (options)
+- Add/remove rows (criteria)
+- Save changes back to JSON file via API endpoint
+
+Considerations:
+- No conflict resolution - user is responsible for not editing while agent is working
+- Could add visual indicator when file was last modified externally
+- Future: overlay file approach if conflicts become a problem
+
+### Multi-file discovery improvement
+When multiple `.json` files exist in `.decisions/`, current behavior picks one arbitrarily. Options to improve:
+1. Error with list of available files, prompt user to specify
+2. Pick alphabetically first for predictability
+3. Pick most recently modified file
+4. Interactive prompt to choose
+
 ## Definition of Done
 
 MVP is complete when:
