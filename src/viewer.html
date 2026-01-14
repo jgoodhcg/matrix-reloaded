@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision Matrix</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .status {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status.connected {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.disconnected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border: 1px solid #e0e0e0;
+      vertical-align: top;
+    }
+
+    /* Decision statement - top left */
+    .decision-statement {
+      background: #2c3e50;
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    /* Option labels - top row */
+    .option-label {
+      background: #34495e;
+      color: white;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* Decision description - second row first cell */
+    .decision-description {
+      background: #ecf0f1;
+      font-style: italic;
+      color: #555;
+    }
+
+    /* Option descriptions - second row */
+    .option-description {
+      background: #f8f9fa;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    /* Criteria names - left column */
+    .criteria-name {
+      background: #f8f9fa;
+      font-weight: 600;
+      min-width: 150px;
+    }
+
+    /* Assessment cells */
+    .cell {
+      min-width: 200px;
+    }
+
+    .cell.red {
+      background: #ffcccc;
+    }
+
+    .cell.yellow {
+      background: #ffffcc;
+    }
+
+    .cell.green {
+      background: #ccffcc;
+    }
+
+    /* Hover effect for cells */
+    td.cell:hover {
+      filter: brightness(0.95);
+    }
+
+    .empty {
+      color: #999;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="status disconnected" id="status">Disconnected</div>
+    <table id="matrix"></table>
+  </div>
+
+  <script>
+    let ws;
+    const statusEl = document.getElementById("status");
+    const matrixEl = document.getElementById("matrix");
+
+    function connectWebSocket() {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+      ws.onopen = () => {
+        statusEl.textContent = "Connected";
+        statusEl.className = "status connected";
+      };
+
+      ws.onclose = () => {
+        statusEl.textContent = "Disconnected";
+        statusEl.className = "status disconnected";
+        setTimeout(connectWebSocket, 2000);
+      };
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "reload") {
+          fetchAndRender();
+        }
+      };
+    }
+
+    async function fetchAndRender() {
+      try {
+        const res = await fetch("/api/matrix");
+        const matrix = await res.json();
+        render(matrix);
+        document.title = matrix.decision.statement + " | Decision Matrix";
+      } catch (err) {
+        console.error("Failed to fetch matrix:", err);
+      }
+    }
+
+    function render(matrix) {
+      const { decision, options, criteria } = matrix;
+      let html = "";
+
+      // Row 1: Decision statement + option labels
+      html += "<tr>";
+      html += `<th class="decision-statement">${escapeHtml(decision.statement)}</th>`;
+      for (const opt of options) {
+        html += `<th class="option-label">${escapeHtml(opt.label)}</th>`;
+      }
+      html += "</tr>";
+
+      // Row 2: Decision description + option descriptions
+      html += "<tr>";
+      html += `<td class="decision-description">${escapeHtml(decision.description)}</td>`;
+      for (const opt of options) {
+        html += `<td class="option-description">${escapeHtml(opt.description)}</td>`;
+      }
+      html += "</tr>";
+
+      // Criteria rows
+      for (const crit of criteria) {
+        html += "<tr>";
+        html += `<td class="criteria-name">${escapeHtml(crit.name)}</td>`;
+        for (const opt of options) {
+          const cell = crit.cells[opt.label];
+          if (cell) {
+            const colorClass = cell.color || "";
+            html += `<td class="cell ${colorClass}">${escapeHtml(cell.text)}</td>`;
+          } else {
+            html += `<td class="cell empty">-</td>`;
+          }
+        }
+        html += "</tr>";
+      }
+
+      matrixEl.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // Initialize
+    connectWebSocket();
+    fetchAndRender();
+  </script>
+</body>
+</html>
