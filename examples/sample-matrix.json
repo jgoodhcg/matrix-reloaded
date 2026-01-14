@@ -9,7 +9,9 @@
     { "label": "DynamoDB", "description": "AWS managed NoSQL, pay-per-request" },
     { "label": "MySQL", "description": "Traditional RDBMS, wide ecosystem support" },
     { "label": "MongoDB", "description": "Document store with flexible schema" },
-    { "label": "CockroachDB", "description": "Distributed SQL with strong consistency" }
+    { "label": "CockroachDB", "description": "Distributed SQL with strong consistency" },
+    { "label": "XTDB", "description": "Bitemporal database with immutable log" },
+    { "label": "Rama", "description": "Distributed programming platform with integrated storage" }
   ],
   "criteria": [
     {
@@ -20,7 +22,9 @@
         "DynamoDB": { "text": "Limited to key-value and simple query patterns. Complex queries require application-side joins which adds latency and complexity.", "color": "red" },
         "MySQL": { "text": "Good SQL support, slightly behind PostgreSQL on advanced features like CTEs (added in 8.0)", "color": "green" },
         "MongoDB": { "text": "Aggregation pipeline is powerful but has steep learning curve. No native joins.", "color": "yellow" },
-        "CockroachDB": { "text": "PostgreSQL-compatible SQL syntax with distributed execution", "color": "green" }
+        "CockroachDB": { "text": "PostgreSQL-compatible SQL syntax with distributed execution", "color": "green" },
+        "XTDB": { "text": "Datalog queries are very expressive. Bitemporal queries built-in. SQL layer available but less mature.", "color": "green" },
+        "Rama": { "text": "Custom query logic via topologies. Very flexible but requires learning Rama's programming model.", "color": "yellow" }
       }
     },
     {
@@ -31,7 +35,9 @@
         "DynamoDB": { "text": "Fully managed by AWS - no servers, automatic scaling, built-in backups", "color": "green" },
         "MySQL": { "text": "Similar to PostgreSQL - RDS helps but still needs monitoring and tuning", "color": "yellow" },
         "MongoDB": { "text": "Atlas is fully managed. Self-hosted requires replica set management which is complex.", "color": "yellow" },
-        "CockroachDB": { "text": "Serverless option available, but self-hosted requires understanding distributed systems concepts for proper operation", "color": "yellow" }
+        "CockroachDB": { "text": "Serverless option available, but self-hosted requires understanding distributed systems concepts for proper operation", "color": "yellow" },
+        "XTDB": { "text": "Requires Kafka or similar for transaction log. More moving parts than traditional databases.", "color": "red" },
+        "Rama": { "text": "Manages its own cluster. Significant operational learning curve but handles many concerns automatically.", "color": "yellow" }
       }
     },
     {
@@ -42,7 +48,9 @@
         "DynamoDB": { "text": "Would need significant training on NoSQL patterns, single-table design, and DynamoDB-specific concepts like GSIs and LSIs", "color": "yellow" },
         "MySQL": { "text": "Very familiar, several team members have production experience", "color": "green" },
         "MongoDB": { "text": "Two team members have used it. Others would need to learn document modeling.", "color": "yellow" },
-        "CockroachDB": { "text": "SQL knowledge transfers, but distributed concepts are new", "color": "yellow" }
+        "CockroachDB": { "text": "SQL knowledge transfers, but distributed concepts are new", "color": "yellow" },
+        "XTDB": { "text": "No one has used it. Datalog is a new paradigm for the team.", "color": "red" },
+        "Rama": { "text": "Completely new paradigm. Would require substantial investment in learning.", "color": "red" }
       }
     },
     {
@@ -53,7 +61,9 @@
         "DynamoDB": { "text": "Scales horizontally with virtually unlimited write capacity. Auto-scales based on demand.", "color": "green" },
         "MySQL": { "text": "Good concurrency with InnoDB, though slightly more lock contention than PostgreSQL", "color": "green" },
         "MongoDB": { "text": "Document-level locking provides good concurrency for most workloads", "color": "green" },
-        "CockroachDB": { "text": "Distributed transactions across nodes with serializable isolation by default", "color": "green" }
+        "CockroachDB": { "text": "Distributed transactions across nodes with serializable isolation by default", "color": "green" },
+        "XTDB": { "text": "Append-only log means writes don't block. Scales with Kafka partitions.", "color": "green" },
+        "Rama": { "text": "Designed for high-throughput distributed writes. Handles partitioning automatically.", "color": "green" }
       }
     },
     {
@@ -64,7 +74,9 @@
         "DynamoDB": { "text": "Can spike unexpectedly with traffic bursts. On-demand pricing is convenient but expensive at scale. Reserved capacity requires planning.", "color": "yellow" },
         "MySQL": { "text": "Similar to PostgreSQL - predictable RDS costs", "color": "green" },
         "MongoDB": { "text": "Atlas pricing can add up quickly. Self-hosted is cheaper but requires more ops work.", "color": "yellow" },
-        "CockroachDB": { "text": "Serverless has usage-based pricing. Dedicated clusters are expensive but predictable.", "color": "yellow" }
+        "CockroachDB": { "text": "Serverless has usage-based pricing. Dedicated clusters are expensive but predictable.", "color": "yellow" },
+        "XTDB": { "text": "Open source core. Costs are infrastructure (Kafka, compute, storage). Can be optimized.", "color": "green" },
+        "Rama": { "text": "Commercial licensing required. Need to contact for pricing.", "color": "yellow" }
       }
     },
     {
@@ -75,7 +87,9 @@
         "DynamoDB": { "text": "Built-in point-in-time recovery, global tables for multi-region. AWS handles everything.", "color": "green" },
         "MySQL": { "text": "RDS automated backups and replicas. Similar capabilities to PostgreSQL.", "color": "green" },
         "MongoDB": { "text": "Atlas has automated backups. Self-hosted requires setting up oplog-based backups.", "color": "yellow" },
-        "CockroachDB": { "text": "Built-in replication across nodes. Survives node failures automatically. Backup to cloud storage supported.", "color": "green" }
+        "CockroachDB": { "text": "Built-in replication across nodes. Survives node failures automatically. Backup to cloud storage supported.", "color": "green" },
+        "XTDB": { "text": "Immutable log is inherently recoverable. Point-in-time queries are trivial due to bitemporality.", "color": "green" },
+        "Rama": { "text": "Built-in replication and fault tolerance. Recovery procedures less documented.", "color": "yellow" }
       }
     },
     {
@@ -86,7 +100,22 @@
         "DynamoDB": { "text": "Schemaless - any attributes can be added anytime. Great for evolving data models but requires discipline.", "color": "green" },
         "MySQL": { "text": "Strict schema like PostgreSQL. JSON columns available but less powerful than JSONB.", "color": "yellow" },
         "MongoDB": { "text": "Fully flexible schema - documents in same collection can have different fields. Schema validation optional.", "color": "green" },
-        "CockroachDB": { "text": "Strict schema like PostgreSQL with JSONB support", "color": "yellow" }
+        "CockroachDB": { "text": "Strict schema like PostgreSQL with JSONB support", "color": "yellow" },
+        "XTDB": { "text": "Schemaless by default. Documents are just maps. Schema enforcement optional.", "color": "green" },
+        "Rama": { "text": "Schema defined in code. Changes require redeployment but are type-safe.", "color": "yellow" }
+      }
+    },
+    {
+      "name": "Temporal Queries",
+      "cells": {
+        "PostgreSQL": { "text": "No built-in support. Would need to implement manually with timestamp columns.", "color": "red" },
+        "SQLite": { "text": "No built-in support.", "color": "red" },
+        "DynamoDB": { "text": "No built-in support. Point-in-time recovery exists but not queryable history.", "color": "red" },
+        "MySQL": { "text": "No built-in support.", "color": "red" },
+        "MongoDB": { "text": "No built-in support. Change streams exist but not for historical queries." },
+        "CockroachDB": { "text": "AS OF SYSTEM TIME queries allow point-in-time reads within GC window.", "color": "yellow" },
+        "XTDB": { "text": "First-class bitemporality. Query any point in valid-time and transaction-time. Perfect audit trail.", "color": "green" },
+        "Rama": { "text": "Can implement temporal patterns but not built-in. Would need custom topology design." }
       }
     }
   ]

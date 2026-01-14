@@ -104,7 +104,7 @@ async function main() {
   try {
     const matrix = await loadMatrix(filePath);
     const xlsxPath = getXLSXPath(filePath);
-    generateXLSX(matrix, xlsxPath);
+    await generateXLSX(matrix, xlsxPath);
     console.log(`Exported: ${xlsxPath}`);
   } catch (err) {
     console.error("Failed initial XLSX export:", err);
@@ -167,7 +167,7 @@ async function main() {
       try {
         const matrix = await loadMatrix(filePath!);
         const xlsxPath = getXLSXPath(filePath!);
-        generateXLSX(matrix, xlsxPath);
+        await generateXLSX(matrix, xlsxPath);
         console.log(`Exported: ${xlsxPath}`);
       } catch (err) {
         console.error("Failed to export XLSX:", err);

@@ -11,16 +11,21 @@
       padding: 0;
     }
 
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      padding: 2rem;
       background: #f5f5f5;
       color: #333;
     }
 
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
+    .table-container {
+      height: 100vh;
+      width: 100vw;
+      overflow: auto;
     }
 
     .status {
@@ -31,6 +36,7 @@
       border-radius: 4px;
       font-size: 0.875rem;
       font-weight: 500;
+      z-index: 100;
     }
 
     .status.connected {
@@ -44,19 +50,45 @@
     }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       background: white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      overflow: hidden;
     }
 
     th, td {
-      padding: 1rem;
+      padding: 0;
       text-align: left;
       border: 1px solid #e0e0e0;
       vertical-align: top;
+      min-width: 200px;
+      max-width: 300px;
+    }
+
+    /* Inner wrapper for cell content - enables scrolling */
+    .cell-content {
+      padding: 1rem;
+      max-height: 120px;
+      overflow: auto;
+    }
+
+    /* Sticky first column */
+    th:first-child,
+    td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+    }
+
+    /* Sticky first header row only */
+    thead tr:first-child th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+
+    /* Corner cell needs highest z-index */
+    thead tr:first-child th:first-child {
+      z-index: 4;
     }
 
     /* Decision statement - top left */
@@ -65,6 +97,7 @@
       color: white;
       font-size: 1.25rem;
       font-weight: 600;
+      min-width: 200px;
     }
 
     /* Option labels - top row */
@@ -98,7 +131,8 @@
 
     /* Assessment cells */
     .cell {
-      min-width: 200px;
+      cursor: pointer;
+      transition: filter 0.1s;
     }
 
     .cell.red {
@@ -115,25 +149,99 @@
 
     /* Hover effect for cells */
     td.cell:hover {
-      filter: brightness(0.95);
+      filter: brightness(0.92);
     }
 
     .empty {
       color: #999;
       font-style: italic;
     }
+
+    /* Modal overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      max-height: 80vh;
+      overflow: auto;
+      padding: 1.5rem;
+    }
+
+    .modal-header {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #2c3e50;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 0.5rem;
+    }
+
+    .modal-subheader {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .modal-content {
+      line-height: 1.6;
+    }
+
+    .modal-color-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .modal-color-indicator.red { background: #ff9999; }
+    .modal-color-indicator.yellow { background: #ffff99; }
+    .modal-color-indicator.green { background: #99ff99; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="status disconnected" id="status">Disconnected</div>
+  <div class="status disconnected" id="status">Disconnected</div>
+  <div class="table-container">
     <table id="matrix"></table>
+  </div>
+
+  <!-- Modal for cell details -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal">
+      <div class="modal-header" id="modal-header"></div>
+      <div class="modal-subheader" id="modal-subheader"></div>
+      <div class="modal-content" id="modal-content"></div>
+    </div>
   </div>
 
   <script>
     let ws;
+    let currentMatrix = null;
     const statusEl = document.getElementById("status");
     const matrixEl = document.getElementById("matrix");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const modalHeader = document.getElementById("modal-header");
+    const modalSubheader = document.getElementById("modal-subheader");
+    const modalContent = document.getElementById("modal-content");
 
     function connectWebSocket() {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -162,6 +270,7 @@
       try {
         const res = await fetch("/api/matrix");
         const matrix = await res.json();
+        currentMatrix = matrix;
         render(matrix);
         document.title = matrix.decision.statement + " | Decision Matrix";
       } catch (err) {
@@ -171,42 +280,89 @@
 
     function render(matrix) {
       const { decision, options, criteria } = matrix;
-      let html = "";
+      let html = "<thead>";
 
       // Row 1: Decision statement + option labels
       html += "<tr>";
-      html += `<th class="decision-statement">${escapeHtml(decision.statement)}</th>`;
+      html += `<th class="decision-statement"><div class="cell-content">${escapeHtml(decision.statement)}</div></th>`;
       for (const opt of options) {
-        html += `<th class="option-label">${escapeHtml(opt.label)}</th>`;
+        html += `<th class="option-label"><div class="cell-content">${escapeHtml(opt.label)}</div></th>`;
       }
       html += "</tr>";
 
       // Row 2: Decision description + option descriptions
       html += "<tr>";
-      html += `<td class="decision-description">${escapeHtml(decision.description)}</td>`;
+      html += `<th class="decision-description"><div class="cell-content">${escapeHtml(decision.description)}</div></th>`;
       for (const opt of options) {
-        html += `<td class="option-description">${escapeHtml(opt.description)}</td>`;
+        html += `<th class="option-description"><div class="cell-content">${escapeHtml(opt.description)}</div></th>`;
       }
       html += "</tr>";
+      html += "</thead><tbody>";
 
       // Criteria rows
       for (const crit of criteria) {
         html += "<tr>";
-        html += `<td class="criteria-name">${escapeHtml(crit.name)}</td>`;
+        html += `<td class="criteria-name"><div class="cell-content">${escapeHtml(crit.name)}</div></td>`;
         for (const opt of options) {
           const cell = crit.cells[opt.label];
           if (cell) {
             const colorClass = cell.color || "";
-            html += `<td class="cell ${colorClass}">${escapeHtml(cell.text)}</td>`;
+            html += `<td class="cell ${colorClass}" data-option="${escapeHtml(opt.label)}" data-criteria="${escapeHtml(crit.name)}"><div class="cell-content">${escapeHtml(cell.text)}</div></td>`;
           } else {
-            html += `<td class="cell empty">-</td>`;
+            html += `<td class="cell empty"><div class="cell-content">-</div></td>`;
           }
         }
         html += "</tr>";
       }
+      html += "</tbody>";
 
       matrixEl.innerHTML = html;
+
+      // Add click handlers to cells
+      document.querySelectorAll("td.cell:not(.empty)").forEach(cell => {
+        cell.addEventListener("click", () => {
+          const optionLabel = cell.dataset.option;
+          const criteriaName = cell.dataset.criteria;
+          showModal(optionLabel, criteriaName);
+        });
+      });
     }
+
+    function showModal(optionLabel, criteriaName) {
+      if (!currentMatrix) return;
+
+      const criteria = currentMatrix.criteria.find(c => c.name === criteriaName);
+      if (!criteria) return;
+
+      const cell = criteria.cells[optionLabel];
+      if (!cell) return;
+
+      const option = currentMatrix.options.find(o => o.label === optionLabel);
+
+      modalHeader.innerHTML = `<span class="modal-color-indicator ${cell.color || ''}"></span>${escapeHtml(optionLabel)}`;
+      modalSubheader.textContent = criteriaName;
+      modalContent.textContent = cell.text;
+
+      modalOverlay.classList.add("active");
+    }
+
+    function hideModal() {
+      modalOverlay.classList.remove("active");
+    }
+
+    // Close modal when clicking overlay (but not modal itself)
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) {
+        hideModal();
+      }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        hideModal();
+      }
+    });
 
     function escapeHtml(str) {
       if (!str) return "";
