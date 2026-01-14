@@ -9,16 +9,50 @@ import { generateXLSX, getXLSXPath } from "./export";
 const DEFAULT_PORT = 3000;
 const DECISIONS_DIR = ".decisions";
 
+// Print help message
+function printHelp(): void {
+  console.log(`
+matrix-reloaded - Decision matrix viewer with live reload
+
+USAGE:
+  matrix-reloaded [OPTIONS] [FILE]
+
+ARGUMENTS:
+  FILE                    Path to a decision matrix JSON file
+                          If omitted, looks for .json files in ./.decisions/
+
+OPTIONS:
+  -h, --help              Show this help message
+  -i, --instructions      Show instructions for creating decision matrices
+  -p, --port <PORT>       Set the server port (default: ${DEFAULT_PORT})
+
+EXAMPLES:
+  matrix-reloaded                           # Auto-discover from .decisions/
+  matrix-reloaded my-decision.json          # Use specific file
+  matrix-reloaded -p 8080 decisions.json    # Custom port
+
+FEATURES:
+  - Live reload on file changes
+  - Automatic XLSX export (same path as JSON, .xlsx extension)
+  - Sticky headers and scrollable cells
+  - Click any cell to view full content
+  - Red/yellow/green color coding preserved in Excel export
+`);
+}
+
 // Parse CLI arguments
-function parseArgs(): { filePath: string | null; port: number; showInstructions: boolean } {
+function parseArgs(): { filePath: string | null; port: number; showInstructions: boolean; showHelp: boolean } {
   const args = process.argv.slice(2);
   let filePath: string | null = null;
   let port = DEFAULT_PORT;
   let showInstructions = false;
+  let showHelp = false;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === "--instructions" || arg === "-i") {
+    if (arg === "--help" || arg === "-h") {
+      showHelp = true;
+    } else if (arg === "--instructions" || arg === "-i") {
       showInstructions = true;
     } else if (arg === "--port" || arg === "-p") {
       port = parseInt(args[++i], 10) || DEFAULT_PORT;
@@ -27,7 +61,7 @@ function parseArgs(): { filePath: string | null; port: number; showInstructions:
     }
   }
 
-  return { filePath, port, showInstructions };
+  return { filePath, port, showInstructions, showHelp };
 }
 
 // Find first JSON file in .decisions directory
@@ -62,7 +96,12 @@ async function getViewerHTML(): Promise<string> {
 
 // Main
 async function main() {
-  const { filePath: argFilePath, port, showInstructions } = parseArgs();
+  const { filePath: argFilePath, port, showInstructions, showHelp } = parseArgs();
+
+  if (showHelp) {
+    printHelp();
+    process.exit(0);
+  }
 
   if (showInstructions) {
     printInstructions();
