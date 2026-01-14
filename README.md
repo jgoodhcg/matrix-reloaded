@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/banner.png" alt="matrix-reloaded" width="600">
+</p>
+
 # matrix-reloaded
 
 A local development tool for visualizing decision matrices with live reload.

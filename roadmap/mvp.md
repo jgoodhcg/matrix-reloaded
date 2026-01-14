@@ -120,6 +120,24 @@ Considerations:
 - Could add visual indicator when file was last modified externally
 - Future: overlay file approach if conflicts become a problem
 
+### File watcher reliability
+Auto-reload not triggering consistently in compiled binary on other projects. Works in dev, fails with vim edits and agent edits. WebSocket connection is fine (101 upgrade successful).
+
+Investigate:
+- `fs.watch` behavior differences between dev and compiled binary
+- vim's write behavior (backup file swap)
+- Watch directory instead of file to handle delete+recreate patterns
+- Test with `fs.watchFile` (polling) as fallback
+- Verify watcher callback is firing at all in compiled version
+
+### Debug logging
+Add `--debug` CLI flag for verbose logging. Consider:
+- Where logs go in dev (stdout) vs compiled (file? stdout?)
+- Log file watcher events
+- Log WebSocket connections/disconnections
+- Log file read/parse attempts
+- Make it easy to diagnose issues like the watcher problem above
+
 ### Multi-file discovery improvement
 When multiple `.json` files exist in `.decisions/`, current behavior picks one arbitrarily. Options to improve:
 1. Error with list of available files, prompt user to specify
