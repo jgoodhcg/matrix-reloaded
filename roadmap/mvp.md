@@ -145,6 +145,15 @@ When multiple `.json` files exist in `.decisions/`, current behavior picks one a
 3. Pick most recently modified file
 4. Interactive prompt to choose
 
+### Styling update with Tailwind CSS 4
+Migrate the viewer styling to use Tailwind CSS 4 for modern, maintainable styles.
+
+Features:
+- Replace embedded CSS with Tailwind CSS 4 utility classes
+- Leverage Tailwind CSS 4's new features and performance improvements
+- Maintain existing visual appearance and responsiveness
+- Configure Tailwind CSS 4 via CDN or bundled for the binary build
+
 ## Definition of Done
 
 MVP is complete when:
