@@ -28,9 +28,11 @@ Create decision matrices as JSON files in \`.decisions/\` directory.
 
 ## Colors
 
+Default to no coloring (neutral). Use colors sparingly:
+
 - \`red\`: Blocker - eliminates this option
-- \`yellow\`: Concern - less than ideal
-- \`green\`: Good - positive for this criteria
+- \`yellow\`: Notably negative aspect
+- \`green\`: Notable good aspect - significant benefit over at least some or all of the other options
 - (omit): Neutral
 
 ## Example
