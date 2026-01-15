@@ -130,6 +130,12 @@ Investigate:
 - Test with `fs.watchFile` (polling) as fallback
 - Verify watcher callback is firing at all in compiled version
 
+### README improvements
+Add a "Why" section explaining the motivation for decision matrices:
+- Link to Rich Hickey's "Design in Practice" talk
+- Explain how matrices help structure thinking and facilitate team discussions
+- Document the iterative workflow with agentic tools
+
 ### Debug logging
 Add `--debug` CLI flag for verbose logging. Consider:
 - Where logs go in dev (stdout) vs compiled (file? stdout?)
