@@ -18,100 +18,100 @@
       "name": "Query Complexity",
       "cells": {
         "PostgreSQL": { "text": "Full SQL support including joins, CTEs, window functions, and advanced aggregations. Excellent for complex analytical queries.", "color": "green" },
-        "SQLite": { "text": "Full SQL but single-writer limitation can cause issues under load", "color": "yellow" },
+        "SQLite": { "text": "Full SQL but single-writer limitation can cause issues under load" },
         "DynamoDB": { "text": "Limited to key-value and simple query patterns. Complex queries require application-side joins which adds latency and complexity.", "color": "red" },
-        "MySQL": { "text": "Good SQL support, slightly behind PostgreSQL on advanced features like CTEs (added in 8.0)", "color": "green" },
-        "MongoDB": { "text": "Aggregation pipeline is powerful but has steep learning curve. No native joins.", "color": "yellow" },
-        "CockroachDB": { "text": "PostgreSQL-compatible SQL syntax with distributed execution", "color": "green" },
-        "XTDB": { "text": "Datalog queries are very expressive. Bitemporal queries built-in. SQL layer available but less mature.", "color": "green" },
-        "Rama": { "text": "Custom query logic via topologies. Very flexible but requires learning Rama's programming model.", "color": "yellow" }
+        "MySQL": { "text": "Good SQL support, slightly behind PostgreSQL on advanced features like CTEs (added in 8.0)" },
+        "MongoDB": { "text": "Aggregation pipeline is powerful but has steep learning curve. No native joins." },
+        "CockroachDB": { "text": "PostgreSQL-compatible SQL syntax with distributed execution" },
+        "XTDB": { "text": "Datalog queries are very expressive. Bitemporal queries built-in. SQL layer available but less mature." },
+        "Rama": { "text": "Custom query logic via topologies. Very flexible but requires learning Rama's programming model." }
       }
     },
     {
       "name": "Operational Overhead",
       "cells": {
-        "PostgreSQL": { "text": "Need to manage backups, updates, connection pooling, and monitoring. RDS handles some of this but still requires attention.", "color": "yellow" },
+        "PostgreSQL": { "text": "Need to manage backups, updates, connection pooling, and monitoring. RDS handles some of this but still requires attention." },
         "SQLite": { "text": "Zero ops, just a file. Backup is just copying the file. No server process to manage.", "color": "green" },
-        "DynamoDB": { "text": "Fully managed by AWS - no servers, automatic scaling, built-in backups", "color": "green" },
-        "MySQL": { "text": "Similar to PostgreSQL - RDS helps but still needs monitoring and tuning", "color": "yellow" },
-        "MongoDB": { "text": "Atlas is fully managed. Self-hosted requires replica set management which is complex.", "color": "yellow" },
-        "CockroachDB": { "text": "Serverless option available, but self-hosted requires understanding distributed systems concepts for proper operation", "color": "yellow" },
+        "DynamoDB": { "text": "Fully managed by AWS - no servers, automatic scaling, built-in backups" },
+        "MySQL": { "text": "Similar to PostgreSQL - RDS helps but still needs monitoring and tuning" },
+        "MongoDB": { "text": "Atlas is fully managed. Self-hosted requires replica set management which is complex." },
+        "CockroachDB": { "text": "Serverless option available, but self-hosted requires understanding distributed systems concepts for proper operation" },
         "XTDB": { "text": "Requires Kafka or similar for transaction log. More moving parts than traditional databases.", "color": "red" },
-        "Rama": { "text": "Manages its own cluster. Significant operational learning curve but handles many concerns automatically.", "color": "yellow" }
+        "Rama": { "text": "Manages its own cluster. Significant operational learning curve but handles many concerns automatically." }
       }
     },
     {
       "name": "Team Familiarity",
       "cells": {
         "PostgreSQL": { "text": "Everyone knows SQL", "color": "green" },
-        "SQLite": { "text": "Same SQL knowledge applies", "color": "green" },
-        "DynamoDB": { "text": "Would need significant training on NoSQL patterns, single-table design, and DynamoDB-specific concepts like GSIs and LSIs", "color": "yellow" },
-        "MySQL": { "text": "Very familiar, several team members have production experience", "color": "green" },
-        "MongoDB": { "text": "Two team members have used it. Others would need to learn document modeling.", "color": "yellow" },
-        "CockroachDB": { "text": "SQL knowledge transfers, but distributed concepts are new", "color": "yellow" },
-        "XTDB": { "text": "No one has used it. Datalog is a new paradigm for the team.", "color": "red" },
+        "SQLite": { "text": "Same SQL knowledge applies" },
+        "DynamoDB": { "text": "Would need significant training on NoSQL patterns, single-table design, and DynamoDB-specific concepts like GSIs and LSIs" },
+        "MySQL": { "text": "Very familiar, several team members have production experience" },
+        "MongoDB": { "text": "Two team members have used it. Others would need to learn document modeling." },
+        "CockroachDB": { "text": "SQL knowledge transfers, but distributed concepts are new" },
+        "XTDB": { "text": "No one has used it. Datalog is a new paradigm for the team." },
         "Rama": { "text": "Completely new paradigm. Would require substantial investment in learning.", "color": "red" }
       }
     },
     {
       "name": "Concurrent Writes",
       "cells": {
-        "PostgreSQL": { "text": "Excellent MVCC concurrency - handles thousands of concurrent writers efficiently with row-level locking", "color": "green" },
+        "PostgreSQL": { "text": "Excellent MVCC concurrency - handles thousands of concurrent writers efficiently with row-level locking" },
         "SQLite": { "text": "Single writer at a time - WAL mode helps reads but writes are serialized. Not suitable for high write concurrency.", "color": "red" },
         "DynamoDB": { "text": "Scales horizontally with virtually unlimited write capacity. Auto-scales based on demand.", "color": "green" },
-        "MySQL": { "text": "Good concurrency with InnoDB, though slightly more lock contention than PostgreSQL", "color": "green" },
-        "MongoDB": { "text": "Document-level locking provides good concurrency for most workloads", "color": "green" },
-        "CockroachDB": { "text": "Distributed transactions across nodes with serializable isolation by default", "color": "green" },
-        "XTDB": { "text": "Append-only log means writes don't block. Scales with Kafka partitions.", "color": "green" },
-        "Rama": { "text": "Designed for high-throughput distributed writes. Handles partitioning automatically.", "color": "green" }
+        "MySQL": { "text": "Good concurrency with InnoDB, though slightly more lock contention than PostgreSQL" },
+        "MongoDB": { "text": "Document-level locking provides good concurrency for most workloads" },
+        "CockroachDB": { "text": "Distributed transactions across nodes with serializable isolation by default" },
+        "XTDB": { "text": "Append-only log means writes don't block. Scales with Kafka partitions." },
+        "Rama": { "text": "Designed for high-throughput distributed writes. Handles partitioning automatically." }
       }
     },
     {
       "name": "Cost at Scale",
       "cells": {
-        "PostgreSQL": { "text": "Predictable monthly cost based on instance size. RDS pricing is straightforward.", "color": "green" },
+        "PostgreSQL": { "text": "Predictable monthly cost based on instance size. RDS pricing is straightforward." },
         "SQLite": { "text": "Free - no licensing, no server costs, just storage", "color": "green" },
         "DynamoDB": { "text": "Can spike unexpectedly with traffic bursts. On-demand pricing is convenient but expensive at scale. Reserved capacity requires planning.", "color": "yellow" },
-        "MySQL": { "text": "Similar to PostgreSQL - predictable RDS costs", "color": "green" },
-        "MongoDB": { "text": "Atlas pricing can add up quickly. Self-hosted is cheaper but requires more ops work.", "color": "yellow" },
-        "CockroachDB": { "text": "Serverless has usage-based pricing. Dedicated clusters are expensive but predictable.", "color": "yellow" },
-        "XTDB": { "text": "Open source core. Costs are infrastructure (Kafka, compute, storage). Can be optimized.", "color": "green" },
-        "Rama": { "text": "Commercial licensing required. Need to contact for pricing.", "color": "yellow" }
+        "MySQL": { "text": "Similar to PostgreSQL - predictable RDS costs" },
+        "MongoDB": { "text": "Atlas pricing can add up quickly. Self-hosted is cheaper but requires more ops work." },
+        "CockroachDB": { "text": "Serverless has usage-based pricing. Dedicated clusters are expensive but predictable." },
+        "XTDB": { "text": "Open source core. Costs are infrastructure (Kafka, compute, storage). Can be optimized." },
+        "Rama": { "text": "Commercial licensing required. Need to contact for pricing." }
       }
     },
     {
       "name": "Disaster Recovery",
       "cells": {
-        "PostgreSQL": { "text": "RDS provides automated backups, point-in-time recovery, and cross-region replicas. Well-documented restore procedures.", "color": "green" },
+        "PostgreSQL": { "text": "RDS provides automated backups, point-in-time recovery, and cross-region replicas. Well-documented restore procedures." },
         "SQLite": { "text": "Manual backup required. Litestream can help with continuous replication to S3.", "color": "yellow" },
         "DynamoDB": { "text": "Built-in point-in-time recovery, global tables for multi-region. AWS handles everything.", "color": "green" },
-        "MySQL": { "text": "RDS automated backups and replicas. Similar capabilities to PostgreSQL.", "color": "green" },
-        "MongoDB": { "text": "Atlas has automated backups. Self-hosted requires setting up oplog-based backups.", "color": "yellow" },
-        "CockroachDB": { "text": "Built-in replication across nodes. Survives node failures automatically. Backup to cloud storage supported.", "color": "green" },
-        "XTDB": { "text": "Immutable log is inherently recoverable. Point-in-time queries are trivial due to bitemporality.", "color": "green" },
-        "Rama": { "text": "Built-in replication and fault tolerance. Recovery procedures less documented.", "color": "yellow" }
+        "MySQL": { "text": "RDS automated backups and replicas. Similar capabilities to PostgreSQL." },
+        "MongoDB": { "text": "Atlas has automated backups. Self-hosted requires setting up oplog-based backups." },
+        "CockroachDB": { "text": "Built-in replication across nodes. Survives node failures automatically. Backup to cloud storage supported." },
+        "XTDB": { "text": "Immutable log is inherently recoverable. Point-in-time queries are trivial due to bitemporality." },
+        "Rama": { "text": "Built-in replication and fault tolerance. Recovery procedures less documented." }
       }
     },
     {
       "name": "Schema Flexibility",
       "cells": {
         "PostgreSQL": { "text": "Strict schema with migrations required. JSONB columns provide some flexibility when needed.", "color": "yellow" },
-        "SQLite": { "text": "Strict schema, migrations needed. Flexible typing can be a footgun.", "color": "yellow" },
+        "SQLite": { "text": "Strict schema, migrations needed. Flexible typing can be a footgun." },
         "DynamoDB": { "text": "Schemaless - any attributes can be added anytime. Great for evolving data models but requires discipline.", "color": "green" },
-        "MySQL": { "text": "Strict schema like PostgreSQL. JSON columns available but less powerful than JSONB.", "color": "yellow" },
-        "MongoDB": { "text": "Fully flexible schema - documents in same collection can have different fields. Schema validation optional.", "color": "green" },
-        "CockroachDB": { "text": "Strict schema like PostgreSQL with JSONB support", "color": "yellow" },
-        "XTDB": { "text": "Schemaless by default. Documents are just maps. Schema enforcement optional.", "color": "green" },
-        "Rama": { "text": "Schema defined in code. Changes require redeployment but are type-safe.", "color": "yellow" }
+        "MySQL": { "text": "Strict schema like PostgreSQL. JSON columns available but less powerful than JSONB." },
+        "MongoDB": { "text": "Fully flexible schema - documents in same collection can have different fields. Schema validation optional." },
+        "CockroachDB": { "text": "Strict schema like PostgreSQL with JSONB support" },
+        "XTDB": { "text": "Schemaless by default. Documents are just maps. Schema enforcement optional." },
+        "Rama": { "text": "Schema defined in code. Changes require redeployment but are type-safe." }
       }
     },
     {
       "name": "Temporal Queries",
       "cells": {
-        "PostgreSQL": { "text": "No built-in support. Would need to implement manually with timestamp columns.", "color": "red" },
-        "SQLite": { "text": "No built-in support.", "color": "red" },
-        "DynamoDB": { "text": "No built-in support. Point-in-time recovery exists but not queryable history.", "color": "red" },
-        "MySQL": { "text": "No built-in support.", "color": "red" },
+        "PostgreSQL": { "text": "No built-in support. Would need to implement manually with timestamp columns." },
+        "SQLite": { "text": "No built-in support." },
+        "DynamoDB": { "text": "No built-in support. Point-in-time recovery exists but not queryable history." },
+        "MySQL": { "text": "No built-in support." },
         "MongoDB": { "text": "No built-in support. Change streams exist but not for historical queries." },
         "CockroachDB": { "text": "AS OF SYSTEM TIME queries allow point-in-time reads within GC window.", "color": "yellow" },
         "XTDB": { "text": "First-class bitemporality. Query any point in valid-time and transaction-time. Perfect audit trail.", "color": "green" },
