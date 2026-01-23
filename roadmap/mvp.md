@@ -136,6 +136,13 @@ Add a "Why" section explaining the motivation for decision matrices:
 - Explain how matrices help structure thinking and facilitate team discussions
 - Document the iterative workflow with agentic tools
 
+### Add screenshots to README
+Include visual examples showing the decision matrix in action:
+- Screenshot of the web app viewer rendering a decision matrix
+- Screenshot of the exported spreadsheet (XLSX) opened in a spreadsheet app
+- Show the color coding (red/yellow/green) in both formats
+- Helps users quickly understand what the tool produces
+
 ### Debug logging
 Add `--debug` CLI flag for verbose logging. Consider:
 - Where logs go in dev (stdout) vs compiled (file? stdout?)
@@ -159,6 +166,49 @@ Features:
 - Leverage Tailwind CSS 4's new features and performance improvements
 - Maintain existing visual appearance and responsiveness
 - Configure Tailwind CSS 4 via CDN or bundled for the binary build
+
+### Decision selector dashboard
+Add a dashboard or navigation UI to switch between multiple decision matrix sheets.
+
+Features:
+- List all available decision matrix files
+- Quick navigation to switch between sheets
+- Visual indication of currently active sheet
+- Support for `.decisions/` folder with multiple JSON files
+
+### Connection status icon positioning
+The connected status icon currently blocks some sheet content. Need to reposition or restyle so it doesn't obscure the matrix.
+
+Options:
+- Move indicator to a less intrusive location (corner, header bar)
+- Make it smaller or collapsible
+- Show only on hover or when connection state changes
+- Use a subtle inline indicator instead of overlay
+
+### Configurable port
+Support choosing a different port to avoid conflicts with other running instances or tools.
+
+Features:
+- Add `--port` CLI argument (already in roadmap but ensure it works)
+- Fall back to next available port if default is in use
+- Display actual port in console output
+- Consider port range or auto-increment on conflict
+
+### Security hardening (CORS and cross-site execution)
+Review and harden security settings to prevent cross-site JavaScript execution vulnerabilities, similar to the opencode DNS rebinding bug.
+
+Concerns:
+- CORS configuration on API endpoints
+- WebSocket origin validation
+- Localhost binding vs 0.0.0.0 exposure
+- DNS rebinding attacks (malicious site making requests to localhost server)
+
+Mitigations to consider:
+- Bind to 127.0.0.1 only by default
+- Validate Host header matches expected localhost values
+- Restrict CORS to same-origin or explicit allowlist
+- Add Origin header checks on WebSocket upgrade requests
+- Consider authentication token for API/WebSocket if exposed beyond localhost
 
 ## Definition of Done
 
